@@ -129,7 +129,8 @@ export async function createPackageAction(formData: FormData) {
 
   const parsed = packageSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    throw new Error("Datos invalidos al crear paquete");
+    const fieldErrors = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Datos invalidos al crear paquete: ${fieldErrors}`);
   }
 
   const data = parsed.data;
@@ -168,7 +169,8 @@ export async function updatePackageAction(id: string, formData: FormData) {
 
   const parsed = packageSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) {
-    throw new Error("Datos invalidos al actualizar paquete");
+    const fieldErrors = parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join(", ");
+    throw new Error(`Datos invalidos al actualizar paquete: ${fieldErrors}`);
   }
 
   const data = parsed.data;
