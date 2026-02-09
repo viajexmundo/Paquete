@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No se recibieron archivos" }, { status: 400 });
   }
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), "public", "uploads");
   await mkdir(uploadDir, { recursive: true });
 
   const urls: string[] = [];
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     const filePath = path.join(uploadDir, filename);
 
     await writeFile(filePath, buffer);
-    urls.push(`/uploads/${filename}`);
+    urls.push(`/api/uploads/${filename}`);
   }
 
   return NextResponse.json({ urls });
