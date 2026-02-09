@@ -1,1 +1,1 @@
-web: prisma db push && next start
+web: prisma db push && tsx prisma/seed.ts && next start
