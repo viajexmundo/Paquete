@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Paquetes App
 
-## Getting Started
+MVP web para mostrar paquetes de viaje sin login y convertir consultas por WhatsApp, con panel admin con login para crear/editar/publicar paquetes.
 
-First, run the development server:
+## Stack
+- Next.js 16 + TypeScript + Tailwind
+- Auth: NextAuth (credentials)
+- DB access: Prisma Client
+- DB local de desarrollo: SQLite
 
+## Configuracion
+1. Instalar dependencias:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Crear variables de entorno:
+```bash
+cp .env.example .env
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Crear esquema local y sembrar datos:
+```bash
+npm run db:bootstrap
+npm run db:seed
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Correr app:
+```bash
+npm run dev
+```
 
-## Learn More
+## Credenciales admin (seed)
+- Email: `admin@agencia.com`
+- Password: `Admin12345`
 
-To learn more about Next.js, take a look at the following resources:
+## Rutas
+- `/` catalogo publico
+- `/paquetes/[slug]` detalle del paquete + CTA WhatsApp
+- `/admin/login` login admin
+- `/admin` dashboard admin (protegido)
+- `/admin/paquetes/nuevo` crear paquete (wizard)
+- `/admin/paquetes/[id]/editar` editar paquete
+- `/api/upload` carga de imagenes (cover y galeria)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Variables importantes
+- `DATABASE_URL`: por defecto `file:/tmp/paquetes-app-dev.db`
+- `NEXTAUTH_URL`: URL base local o productiva
+- `NEXTAUTH_SECRET`: secreto de sesiones
+- `NEXT_PUBLIC_WHATSAPP_NUMBER`: numero destino para `wa.me`
+- `NEXT_PUBLIC_SITE_URL`: URL publica para incluir en mensaje de WhatsApp
+- `NEXT_PUBLIC_AGENCY_NAME`: nombre visible de agencia
+- `NEXT_PUBLIC_AGENCY_LOGO_URL`: ruta o URL del logo
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notas
+- Moneda del catalogo: Quetzal guatemalteco (GTQ).
+- Se puede marcar un paquete como oferta y destacar precio promocional.
+- Solo paquetes `PUBLISHED` aparecen en el sitio publico.
+- Planeacion de producto y backlog: `PRODUCT_PLAN.md`.
