@@ -54,7 +54,7 @@ export function PublicHome({ variant = "default" }: PublicHomeProps) {
           {isCooitza ? (
             <>
               <header className="rounded-2xl border border-[#0B4EA244] bg-white/70 px-4 py-3 backdrop-blur-md">
-                <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center justify-between gap-2 sm:gap-3">
                   <div className="relative h-14 w-40 sm:h-18 sm:w-52">
                     <Image src="/COOITZA-LOGO-WEB-1.png" alt="Cooitza" fill className="object-contain object-left" sizes="208px" />
                   </div>
@@ -107,7 +107,7 @@ export function PublicHome({ variant = "default" }: PublicHomeProps) {
                 </div>
                 <div className="rounded-xl border border-[#0B4EA22e] bg-white/80 px-5 py-4 text-center backdrop-blur">
                   <p className="text-base font-black text-[#0B4EA2] sm:text-lg">Compra con confianza</p>
-                  <p className="mt-1 text-sm text-[#2f466b]">Proceso claro y acompanamiento permanente.</p>
+                  <p className="mt-1 text-sm text-[#2f466b]">Proceso claro y acompañamiento permanente.</p>
                 </div>
               </div>
             </>
