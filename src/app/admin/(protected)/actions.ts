@@ -35,7 +35,7 @@ const packageSchema = z.object({
     }),
   summary: z.string().min(10),
   description: z.string().min(10),
-  coverImageUrl: z.string().min(2),
+  coverImageUrl: z.string().optional().default("/logo-agencia.png"),
   gallery: z.string().optional().default(""),
   includes: z.string().min(2),
   excludes: z.string().min(2),
