@@ -54,22 +54,16 @@ export function PublicHome({ variant = "default" }: PublicHomeProps) {
           {isCooitza ? (
             <>
               <header className="rounded-2xl border border-[#0B4EA244] bg-white/70 px-4 py-3 backdrop-blur-md">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex flex-wrap items-center gap-5">
-                    <div className="relative h-14 w-40 sm:h-16 sm:w-48">
-                      <Image src="/COOITZA-LOGO-WEB-1.png" alt="Cooitza" fill className="object-contain object-left" sizes="192px" />
+                <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-between sm:gap-4">
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-5">
+                    <div className="relative h-12 w-36 sm:h-16 sm:w-48">
+                      <Image src="/COOITZA-LOGO-WEB-1.png" alt="Cooitza" fill className="object-contain" sizes="192px" />
                     </div>
-                    <span className="hidden text-base font-black text-[#0B4EA2] sm:block">x</span>
-                    <div className="relative h-10 w-32 sm:h-12 sm:w-40">
-                      <Image src={appConfig.agencyLogoUrl} alt={appConfig.agencyName} fill className="object-contain object-left" sizes="160px" />
+                    <span className="text-sm font-black text-[#0B4EA2] sm:text-base">x</span>
+                    <div className="relative h-8 w-28 sm:h-12 sm:w-40">
+                      <Image src={appConfig.agencyLogoUrl} alt={appConfig.agencyName} fill className="object-contain" sizes="160px" />
                     </div>
                   </div>
-                  <Link
-                    href="/paquetes"
-                    className="rounded-xl bg-[#0B4EA2] px-4 py-2 text-sm font-extrabold uppercase tracking-wide text-white transition hover:bg-[#0a438c] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0B4EA2]"
-                  >
-                    Ver paquetes
-                  </Link>
                 </div>
               </header>
 
@@ -83,7 +77,7 @@ export function PublicHome({ variant = "default" }: PublicHomeProps) {
                   con respaldo
                 </h1>
                 <p className="mx-auto mt-5 max-w-3xl text-lg leading-relaxed text-[#1B3F73] sm:text-2xl">
-                  Beneficios preferenciales para asociados Cooitza: paquetes curados, asesoria humana y acompanamiento de principio a fin.
+                  Beneficios exclusivos para asociados Cooitzá: paquetes personalizados, asesoría completa y acompañamiento de inicio a fin.
                 </p>
 
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
