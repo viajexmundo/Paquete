@@ -54,15 +54,13 @@ export function PublicHome({ variant = "default" }: PublicHomeProps) {
           {isCooitza ? (
             <>
               <header className="rounded-2xl border border-[#0B4EA244] bg-white/70 px-4 py-3 backdrop-blur-md">
-                <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:justify-between sm:gap-4">
-                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-5">
-                    <div className="relative h-12 w-36 sm:h-16 sm:w-48">
-                      <Image src="/COOITZA-LOGO-WEB-1.png" alt="Cooitza" fill className="object-contain" sizes="192px" />
-                    </div>
-                    <span className="text-sm font-black text-[#0B4EA2] sm:text-base">x</span>
-                    <div className="relative h-8 w-28 sm:h-12 sm:w-40">
-                      <Image src={appConfig.agencyLogoUrl} alt={appConfig.agencyName} fill className="object-contain" sizes="160px" />
-                    </div>
+                <div className="flex items-center justify-between gap-4">
+                  <div className="relative h-14 w-40 sm:h-18 sm:w-52">
+                    <Image src="/COOITZA-LOGO-WEB-1.png" alt="Cooitza" fill className="object-contain object-left" sizes="208px" />
+                  </div>
+                  <span className="text-lg font-black text-[#0B4EA2] sm:text-xl">x</span>
+                  <div className="relative h-10 w-34 sm:h-14 sm:w-44">
+                    <Image src={appConfig.agencyLogoUrl} alt={appConfig.agencyName} fill className="object-contain object-right" sizes="176px" />
                   </div>
                 </div>
               </header>
