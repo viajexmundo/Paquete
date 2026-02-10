@@ -8,6 +8,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { parsePackagesCsv } from "@/lib/csv/packages-csv";
 import { prisma } from "@/lib/db/prisma";
+import { landingVariantKey, landingVariantValues, type LandingVariant } from "@/lib/landing";
 import { buildSlug } from "@/lib/packages";
 
 const packageSchema = z.object({
@@ -296,6 +297,10 @@ const updateUserAccessSchema = z.object({
   canManagePackages: z.string().optional(),
 });
 
+const updateLandingVariantSchema = z.object({
+  variant: z.enum(landingVariantValues),
+});
+
 export async function createUserAction(formData: FormData) {
   await assertPermission("canManageUsers");
 
@@ -347,4 +352,31 @@ export async function updateUserAccessAction(formData: FormData) {
   });
 
   revalidatePath("/admin/usuarios");
+}
+
+export async function updateLandingVariantAction(formData: FormData) {
+  await assertPermission("canManagePackages");
+
+  const parsed = updateLandingVariantSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    throw new Error("Datos invalidos para actualizar la landing");
+  }
+
+  try {
+    await prisma.appSetting.upsert({
+      where: { key: landingVariantKey },
+      update: {
+        value: parsed.data.variant as LandingVariant,
+      },
+      create: {
+        key: landingVariantKey,
+        value: parsed.data.variant as LandingVariant,
+      },
+    });
+  } catch {
+    throw new Error("No se pudo guardar la landing. Ejecuta prisma db push para crear AppSetting.");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/admin/landing");
 }

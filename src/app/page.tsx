@@ -1,5 +1,10 @@
 import { PublicHome } from "@/components/public-home";
+import { getActiveLandingVariant } from "@/lib/landing";
 
-export default function Home() {
-  return <PublicHome />;
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const landingVariant = await getActiveLandingVariant();
+
+  return <PublicHome variant={landingVariant} />;
 }
