@@ -52,7 +52,37 @@ function toList(raw: string) {
 }
 
 function toItinerary(raw: string) {
-  const lines = raw
+  const input = raw.trim();
+  if (!input) {
+    return [{ day: 1, title: "Dia 1", description: "Actividad por definir" }];
+  }
+
+  // New format from form: JSON array of itinerary blocks.
+  try {
+    const parsed = JSON.parse(input) as unknown;
+    if (Array.isArray(parsed)) {
+      const normalized = parsed
+        .map((item, index) => {
+          const step = item as { title?: unknown; description?: unknown };
+          const title = typeof step.title === "string" ? step.title.trim() : "";
+          const description = typeof step.description === "string" ? step.description.trim() : "";
+          return {
+            day: index + 1,
+            title: title || `Dia ${index + 1}`,
+            description: description || "Actividad por definir",
+          };
+        })
+        .filter((step) => step.title || step.description);
+
+      if (normalized.length > 0) {
+        return normalized;
+      }
+    }
+  } catch {
+    // Legacy format fallback: one line per day -> "Titulo | Descripcion"
+  }
+
+  const lines = input
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
@@ -323,6 +353,42 @@ const updateLandingVariantSchema = z.object({
   variant: z.enum(landingVariantValues),
 });
 
+const importJsonItinerarySchema = z.object({
+  day: z.number().int().min(1).optional(),
+  title: z.string().min(1),
+  description: z.string().min(1),
+});
+
+const importJsonPackageSchema = z.object({
+  packageCode: z.string().min(3),
+  name: z.string().min(3),
+  destination: z.string().min(2),
+  durationDays: z.number().int().min(1),
+  basePrice: z.number().int().min(1),
+  offerPrice: z.number().int().min(1).nullable().optional(),
+  isOffer: z.boolean().optional().default(false),
+  offerLabel: z.string().nullable().optional(),
+  summary: z.string().min(10),
+  description: z.string().min(10),
+  coverImageUrl: z.string().optional(),
+  gallery: z.array(z.string()).optional().default([]),
+  includes: z.array(z.string()).optional().default([]),
+  excludes: z.array(z.string()).optional().default([]),
+  itinerary: z.array(importJsonItinerarySchema).min(1),
+});
+
+function normalizeJsonImportInput(value: unknown) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value && typeof value === "object" && Array.isArray((value as { packages?: unknown }).packages)) {
+    return (value as { packages: unknown[] }).packages;
+  }
+
+  return [value];
+}
+
 export async function createUserAction(formData: FormData) {
   await assertPermission("canManageUsers");
 
@@ -401,4 +467,90 @@ export async function updateLandingVariantAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin/landing");
+}
+
+export async function importPackagesJsonAction(formData: FormData) {
+  const user = await assertPermission("canManageCsv");
+  const jsonPayload = formData.get("jsonPayload");
+
+  if (typeof jsonPayload !== "string" || !jsonPayload.trim()) {
+    throw new Error("Debes pegar un JSON valido");
+  }
+
+  let parsedJson: unknown;
+  try {
+    parsedJson = JSON.parse(jsonPayload);
+  } catch {
+    throw new Error("El contenido no es un JSON valido");
+  }
+
+  const candidates = normalizeJsonImportInput(parsedJson);
+  const parsedRows = z.array(importJsonPackageSchema).safeParse(candidates);
+  if (!parsedRows.success) {
+    const detail = parsedRows.error.issues
+      .slice(0, 5)
+      .map((issue) => `${issue.path.join(".") || "root"}: ${issue.message}`)
+      .join(", ");
+    throw new Error(`JSON invalido para importacion: ${detail}`);
+  }
+
+  for (const row of parsedRows.data) {
+    await prisma.package.upsert({
+      where: { packageCode: row.packageCode },
+      update: {
+        slug: buildSlug(row.name),
+        name: row.name,
+        destination: row.destination,
+        durationDays: row.durationDays,
+        basePrice: row.basePrice,
+        offerPrice: row.isOffer ? row.offerPrice ?? null : null,
+        isOffer: row.isOffer,
+        offerLabel: row.isOffer ? row.offerLabel ?? null : null,
+        currency: "GTQ",
+        summary: row.summary,
+        description: row.description,
+        coverImageUrl: row.coverImageUrl || "/logo-agencia.png",
+        gallery: row.gallery,
+        includes: row.includes,
+        excludes: row.excludes,
+        itinerary: row.itinerary.map((step, index) => ({
+          day: index + 1,
+          title: step.title,
+          description: step.description,
+        })),
+        status: PackageStatus.DRAFT,
+      },
+      create: {
+        packageCode: row.packageCode,
+        slug: buildSlug(row.name),
+        name: row.name,
+        destination: row.destination,
+        durationDays: row.durationDays,
+        basePrice: row.basePrice,
+        offerPrice: row.isOffer ? row.offerPrice ?? null : null,
+        isOffer: row.isOffer,
+        offerLabel: row.isOffer ? row.offerLabel ?? null : null,
+        currency: "GTQ",
+        summary: row.summary,
+        description: row.description,
+        coverImageUrl: row.coverImageUrl || "/logo-agencia.png",
+        gallery: row.gallery,
+        includes: row.includes,
+        excludes: row.excludes,
+        itinerary: row.itinerary.map((step, index) => ({
+          day: index + 1,
+          title: step.title,
+          description: step.description,
+        })),
+        status: PackageStatus.DRAFT,
+        createdById: user.id,
+      },
+    });
+  }
+
+  revalidatePath("/");
+  revalidatePath("/paquetes");
+  revalidatePath("/admin");
+  revalidatePath("/admin/json");
+  redirect(`/admin/json?imported=${parsedRows.data.length}`);
 }

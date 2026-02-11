@@ -89,6 +89,12 @@ export default async function AdminDashboardPage() {
               CSV
             </Link>
             <Link
+              href="/admin/json"
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition hover:bg-slate-100"
+            >
+              JSON
+            </Link>
+            <Link
               href="/admin/paquetes/nuevo"
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
             >

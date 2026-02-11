@@ -79,9 +79,13 @@ export function PackageForm({ title, submitLabel, action, defaultValues }: Packa
 
   const itinerarySerialized = useMemo(
     () =>
-      itineraryDays
-        .map((day) => `${day.title.trim() || `Dia ${day.day}`} | ${day.description.trim() || "Actividad por definir"}`)
-        .join("\n"),
+      JSON.stringify(
+        itineraryDays.map((day, index) => ({
+          day: index + 1,
+          title: day.title.trim() || `Dia ${index + 1}`,
+          description: day.description.trim() || "Actividad por definir",
+        })),
+      ),
     [itineraryDays],
   );
 

@@ -1,11 +1,12 @@
 import Link from "next/link";
 
-type AdminTab = "paquetes" | "csv" | "usuarios" | "landing";
+type AdminTab = "paquetes" | "csv" | "json" | "usuarios" | "landing";
 
 const tabStyles: Record<AdminTab, string> = {
   paquetes: "Paquetes",
   landing: "Landing",
   csv: "CSV",
+  json: "JSON",
   usuarios: "Usuarios",
 };
 
