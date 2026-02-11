@@ -31,10 +31,9 @@ export function buildWhatsAppUrl(
   phoneNumber: string,
   packageCode: string,
   packageName: string,
-  packageUrl: string,
 ) {
   const normalizedPhone = phoneNumber.replace(/[^\d]/g, "");
-  const message = `Hola, quiero informacion del paquete ${packageCode} - ${packageName}. Lo vi aqui: ${packageUrl}`;
+  const message = `Hola, quiero informacion del paquete ${packageCode} - ${packageName}.`;
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
 }
 

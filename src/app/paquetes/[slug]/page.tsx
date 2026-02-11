@@ -22,7 +22,6 @@ export default async function PackageDetailPage({ params }: PackagePageProps) {
 
   const finalPrice =
     travelPackage.isOffer && travelPackage.offerPrice ? travelPackage.offerPrice : travelPackage.basePrice;
-  const packageUrl = `${appConfig.siteUrl}/paquetes/${travelPackage.slug}`;
 
   return (
     <main className="min-h-screen bg-slate-50 text-slate-900">
@@ -128,7 +127,6 @@ export default async function PackageDetailPage({ params }: PackagePageProps) {
                   phoneNumber={appConfig.whatsappNumber}
                   packageCode={travelPackage.packageCode}
                   packageName={travelPackage.name}
-                  packageUrl={packageUrl}
                 />
               </aside>
             </div>

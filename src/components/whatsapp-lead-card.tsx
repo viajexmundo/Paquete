@@ -6,15 +6,9 @@ type WhatsAppLeadCardProps = {
   phoneNumber: string;
   packageCode: string;
   packageName: string;
-  packageUrl: string;
 };
 
-export function WhatsAppLeadCard({
-  phoneNumber,
-  packageCode,
-  packageName,
-  packageUrl,
-}: WhatsAppLeadCardProps) {
+export function WhatsAppLeadCard({ phoneNumber, packageCode, packageName }: WhatsAppLeadCardProps) {
   const [fullName, setFullName] = useState("");
   const [tentativeDate, setTentativeDate] = useState("");
   const [peopleCount, setPeopleCount] = useState("2");
@@ -29,7 +23,6 @@ export function WhatsAppLeadCard({
       `Nombre: ${fullName.trim()}`,
       `Fecha tentativa: ${tentativeDate}`,
       `Personas: ${peopleCount}`,
-      `Lo vi aqui: ${packageUrl}`,
     ].join("\n");
 
     const url = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
