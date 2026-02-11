@@ -220,6 +220,28 @@ export async function togglePackageStatusAction(id: string, nextStatus: PackageS
   revalidatePath("/admin");
 }
 
+export async function deletePackageAction(id: string) {
+  await assertPermission("canManagePackages");
+
+  const existingPackage = await prisma.package.findUnique({
+    where: { id },
+    select: { slug: true },
+  });
+
+  if (!existingPackage) {
+    throw new Error("El paquete que intentas borrar no existe");
+  }
+
+  await prisma.package.delete({
+    where: { id },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/paquetes");
+  revalidatePath("/admin");
+  revalidatePath(`/paquetes/${existingPackage.slug}`);
+}
+
 export async function importPackagesCsvAction(formData: FormData) {
   const user = await assertPermission("canManageCsv");
   const csvFile = formData.get("csvFile");

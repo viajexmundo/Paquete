@@ -3,7 +3,7 @@ import { PackageStatus, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AdminTabs } from "@/components/admin-tabs";
 import { LogoutButton } from "@/components/logout-button";
-import { togglePackageStatusAction } from "./actions";
+import { deletePackageAction, togglePackageStatusAction } from "./actions";
 import { auth } from "@/lib/auth";
 import { getAllPackages } from "@/lib/db/package-repository";
 import { prisma } from "@/lib/db/prisma";
@@ -184,6 +184,19 @@ export default async function AdminDashboardPage() {
                           className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-100"
                         >
                           {nextStatusLabel[travelPackage.status]}
+                        </button>
+                      </form>
+                      <form
+                        action={async () => {
+                          "use server";
+                          await deletePackageAction(travelPackage.id);
+                        }}
+                      >
+                        <button
+                          type="submit"
+                          className="rounded-lg border border-rose-300 px-3 py-1.5 text-rose-700 hover:bg-rose-50"
+                        >
+                          Borrar
                         </button>
                       </form>
                     </div>
