@@ -55,6 +55,8 @@ const emptyValues: PackageFormValues = {
 };
 
 const steps = ["Basico", "Precios", "Imagenes", "Contenido", "Publicacion"] as const;
+const maxUploadBytesPerFile = 4 * 1024 * 1024;
+const maxUploadFilesPerRequest = 8;
 
 function normalizeDays(days: ItineraryDay[]) {
   return days.map((item, index) => ({
@@ -95,8 +97,15 @@ export function PackageForm({ title, submitLabel, action, defaultValues }: Packa
   async function uploadFiles(files: FileList | null) {
     if (!files || files.length === 0) return [] as string[];
 
+    if (files.length > maxUploadFilesPerRequest) {
+      throw new Error(`Puedes subir hasta ${maxUploadFilesPerRequest} imagenes por carga`);
+    }
+
     const formData = new FormData();
     for (const file of Array.from(files)) {
+      if (file.size > maxUploadBytesPerFile) {
+        throw new Error(`La imagen "${file.name}" supera 4MB`);
+      }
       formData.append("files", file);
     }
 
@@ -106,7 +115,8 @@ export function PackageForm({ title, submitLabel, action, defaultValues }: Packa
     });
 
     if (!response.ok) {
-      throw new Error("No se pudo subir la imagen");
+      const data = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(data?.error || "No se pudo subir la imagen");
     }
 
     const data = (await response.json()) as { urls: string[] };
@@ -276,7 +286,7 @@ export function PackageForm({ title, submitLabel, action, defaultValues }: Packa
           <div style={showStep(2)} className="space-y-4">
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <h3 className="text-xl font-semibold">Portada</h3>
-              <p className="mt-1 text-sm text-slate-600">Pega una URL de imagen o sube un archivo.</p>
+              <p className="mt-1 text-sm text-slate-600">Pega una URL de imagen o sube un archivo (max 4MB).</p>
               <input
                 type="text"
                 value={coverImageUrl}
@@ -318,7 +328,9 @@ export function PackageForm({ title, submitLabel, action, defaultValues }: Packa
 
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <h3 className="text-xl font-semibold">Galeria</h3>
-              <p className="mt-1 text-sm text-slate-600">Pega URLs de imagenes (una por linea) o sube archivos.</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Pega URLs de imagenes (una por linea) o sube archivos (max 4MB c/u, hasta 8 por carga).
+              </p>
               <textarea
                 value={galleryLines}
                 onChange={(e) => setGalleryLines(e.target.value)}

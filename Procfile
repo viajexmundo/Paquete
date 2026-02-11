@@ -1,1 +1,1 @@
-web: prisma db push && next start
+web: next start

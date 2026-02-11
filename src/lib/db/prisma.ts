@@ -1,7 +1,15 @@
 import { PrismaClient } from "@prisma/client";
 
-// In dev with Turbopack, a globally cached PrismaClient can stay stale after schema changes.
-// Creating a fresh client per server boot avoids "Unknown field" validation drift.
-export const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
-});
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+
+function createPrismaClient() {
+  return new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
+  });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
