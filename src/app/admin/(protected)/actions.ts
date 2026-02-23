@@ -420,6 +420,7 @@ export async function createUserAction(formData: FormData) {
   });
 
   revalidatePath("/admin/usuarios");
+  redirect("/admin/usuarios");
 }
 
 export async function updateUserAccessAction(formData: FormData) {
@@ -443,6 +444,7 @@ export async function updateUserAccessAction(formData: FormData) {
   });
 
   revalidatePath("/admin/usuarios");
+  redirect("/admin/usuarios");
 }
 
 export async function updateLandingVariantAction(formData: FormData) {

@@ -56,7 +56,7 @@ export default async function AdminCotizadorPage() {
         </div>
 
         <div className="cotizador-controls">
-          <AdminTabs current="cotizador" />
+          <AdminTabs current="cotizador" visibleTabs={["cotizador"]} />
         </div>
 
         <div className="mt-6">

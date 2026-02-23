@@ -11,10 +11,12 @@ const tabStyles: Record<AdminTab, string> = {
   usuarios: "Usuarios",
 };
 
-export function AdminTabs({ current }: { current: AdminTab }) {
+export function AdminTabs({ current, visibleTabs }: { current: AdminTab; visibleTabs?: AdminTab[] }) {
+  const tabs = visibleTabs ?? (Object.keys(tabStyles) as AdminTab[]);
+
   return (
     <div className="mt-5 flex gap-2">
-      {(Object.keys(tabStyles) as AdminTab[]).map((tab) => {
+      {tabs.map((tab) => {
         const href = tab === "paquetes" ? "/admin" : `/admin/${tab}`;
         const isActive = tab === current;
 
