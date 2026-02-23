@@ -148,4 +148,13 @@ h6 {
     max-width: 100% !important;
     padding: 0 !important;
   }
+
+  .cotizador-print-block {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+
+  .cotizador-print-page .md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
 }

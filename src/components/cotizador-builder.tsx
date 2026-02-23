@@ -23,6 +23,19 @@ function toInputDate(value: Date) {
   return value.toISOString().slice(0, 10);
 }
 
+function formatDateLabel(dateInput: string) {
+  if (!dateInput) return "No definida";
+  const [yearRaw, monthRaw, dayRaw] = dateInput.split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  if (!year || !month || !day) return "No definida";
+
+  return new Intl.DateTimeFormat("es-GT", { dateStyle: "long", timeZone: "UTC" }).format(
+    new Date(Date.UTC(year, month - 1, day)),
+  );
+}
+
 export function CotizadorBuilder({
   packages,
   agencyName,
@@ -43,12 +56,15 @@ export function CotizadorBuilder({
 
   const [clientName, setClientName] = useState("");
   const [advisorName, setAdvisorName] = useState("");
+  const [advisorPhone, setAdvisorPhone] = useState("");
   const [travelers, setTravelers] = useState(2);
   const [validUntil, setValidUntil] = useState(() => {
     const nextWeek = new Date();
     nextWeek.setDate(nextWeek.getDate() + 6);
     return toInputDate(nextWeek);
   });
+  const [travelDateStart, setTravelDateStart] = useState("");
+  const [travelDateEnd, setTravelDateEnd] = useState("");
   const [includesText, setIncludesText] = useState(initialPackage?.includes.join("\n") ?? "");
   const [excludesText, setExcludesText] = useState(initialPackage?.excludes.join("\n") ?? "");
   const [notesText, setNotesText] = useState(
@@ -57,7 +73,7 @@ export function CotizadorBuilder({
   const [flightIncluded, setFlightIncluded] = useState(false);
   const [flightRoute, setFlightRoute] = useState("");
   const [flightItinerary, setFlightItinerary] = useState("");
-  const [flightPrice, setFlightPrice] = useState(0);
+  const [flightPriceInput, setFlightPriceInput] = useState("");
   const [basePackagePrice, setBasePackagePrice] = useState(initialPrice);
 
   const includes = useMemo(() => linesFromText(includesText), [includesText]);
@@ -65,6 +81,7 @@ export function CotizadorBuilder({
   const notes = useMemo(() => linesFromText(notesText), [notesText]);
   const flightSegments = useMemo(() => linesFromText(flightItinerary), [flightItinerary]);
 
+  const flightPrice = Number(flightPriceInput || "0");
   const totalPrice = basePackagePrice + (flightIncluded ? flightPrice : 0);
   const issueDate = useMemo(
     () =>
@@ -74,12 +91,9 @@ export function CotizadorBuilder({
     [],
   );
 
-  const validUntilLabel = useMemo(() => {
-    if (!validUntil) return "No definida";
-    const parsed = new Date(validUntil);
-    if (Number.isNaN(parsed.getTime())) return "No definida";
-    return new Intl.DateTimeFormat("es-GT", { dateStyle: "long" }).format(parsed);
-  }, [validUntil]);
+  const validUntilLabel = useMemo(() => formatDateLabel(validUntil), [validUntil]);
+  const travelDateStartLabel = useMemo(() => formatDateLabel(travelDateStart), [travelDateStart]);
+  const travelDateEndLabel = useMemo(() => formatDateLabel(travelDateEnd), [travelDateEnd]);
 
   if (!selectedPackage) {
     return (
@@ -143,11 +157,41 @@ export function CotizadorBuilder({
           </label>
 
           <label className="block">
+            <span className="mb-1 block text-sm font-medium">Telefono del asesor</span>
+            <input
+              value={advisorPhone}
+              onChange={(event) => setAdvisorPhone(event.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+              placeholder="+502 5555-5555"
+            />
+          </label>
+
+          <label className="block">
             <span className="mb-1 block text-sm font-medium">Vigencia de cotizacion</span>
             <input
               type="date"
               value={validUntil}
               onChange={(event) => setValidUntil(event.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Fecha inicio de viaje</span>
+            <input
+              type="date"
+              value={travelDateStart}
+              onChange={(event) => setTravelDateStart(event.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Fecha fin de viaje</span>
+            <input
+              type="date"
+              value={travelDateEnd}
+              onChange={(event) => setTravelDateEnd(event.target.value)}
               className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
             />
           </label>
@@ -207,11 +251,15 @@ export function CotizadorBuilder({
               <label className="block">
                 <span className="mb-1 block text-sm font-medium">Precio vuelo (GTQ)</span>
                 <input
-                  type="number"
-                  min={0}
-                  value={flightPrice}
-                  onChange={(event) => setFlightPrice(Math.max(0, Number(event.target.value) || 0))}
+                  type="text"
+                  inputMode="numeric"
+                  value={flightPriceInput}
+                  onChange={(event) => {
+                    const digitsOnly = event.target.value.replace(/[^\d]/g, "");
+                    setFlightPriceInput(digitsOnly);
+                  }}
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                  placeholder="0"
                 />
               </label>
             </div>
@@ -276,6 +324,7 @@ export function CotizadorBuilder({
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Asesor</p>
               <p className="mt-1 text-base font-semibold text-slate-900">{advisorName || "Equipo comercial"}</p>
+              <p className="text-sm text-slate-700">{advisorPhone || "Telefono por confirmar"}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Viajeros</p>
@@ -287,16 +336,23 @@ export function CotizadorBuilder({
                 {selectedPackage.packageCode} - {selectedPackage.name}
               </p>
             </div>
+            <div className="sm:col-span-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Fechas de viaje</p>
+              <p className="mt-1 text-base font-semibold text-slate-900">
+                {travelDateStart ? travelDateStartLabel : "Por definir"} -{" "}
+                {travelDateEnd ? travelDateEndLabel : "Por definir"}
+              </p>
+            </div>
           </section>
 
-          <section className="mt-6">
+          <section className="cotizador-print-block mt-6">
             <h2 className="text-xl font-bold text-slate-900">{selectedPackage.destination}</h2>
             <p className="mt-1 text-sm text-slate-600">{selectedPackage.summary}</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">{selectedPackage.description}</p>
           </section>
 
           <section className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="cotizador-print-block rounded-xl border border-emerald-200 bg-emerald-50 p-4">
               <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-emerald-800">Incluye</h3>
               <ul className="mt-3 space-y-1.5 text-sm text-emerald-950">
                 {includes.length > 0 ? (
@@ -306,7 +362,7 @@ export function CotizadorBuilder({
                 )}
               </ul>
             </div>
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+            <div className="cotizador-print-block rounded-xl border border-rose-200 bg-rose-50 p-4">
               <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-rose-800">No incluye</h3>
               <ul className="mt-3 space-y-1.5 text-sm text-rose-950">
                 {excludes.length > 0 ? (
@@ -318,11 +374,11 @@ export function CotizadorBuilder({
             </div>
           </section>
 
-          <section className="mt-6">
+          <section className="cotizador-print-block mt-6">
             <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">Itinerario del paquete</h3>
             <div className="mt-3 space-y-2">
               {selectedPackage.itinerary.map((day) => (
-                <div key={`${day.day}-${day.title}`} className="rounded-lg border border-slate-200 p-3">
+                <div key={`${day.day}-${day.title}`} className="cotizador-print-block rounded-lg border border-slate-200 p-3">
                   <p className="text-sm font-semibold text-slate-900">
                     Dia {day.day}: {day.title}
                   </p>
@@ -333,7 +389,7 @@ export function CotizadorBuilder({
           </section>
 
           {flightIncluded ? (
-            <section className="mt-6 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
+            <section className="cotizador-print-block mt-6 rounded-xl border border-cyan-200 bg-cyan-50 p-4">
               <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-cyan-900">Cotizacion de vuelo</h3>
               <p className="mt-2 text-sm text-slate-800">Ruta: {flightRoute || "Por definir"}</p>
               <ul className="mt-2 space-y-1.5 text-sm text-slate-700">
@@ -349,7 +405,7 @@ export function CotizadorBuilder({
             </section>
           ) : null}
 
-          <section className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <section className="cotizador-print-block mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">Resumen de inversion</h3>
             <div className="mt-3 space-y-2 text-sm">
               <div className="flex items-center justify-between gap-2">
@@ -368,7 +424,7 @@ export function CotizadorBuilder({
             </div>
           </section>
 
-          <section className="mt-6 rounded-xl border border-slate-200 p-4">
+          <section className="cotizador-print-block mt-6 rounded-xl border border-slate-200 p-4">
             <h3 className="text-sm font-bold uppercase tracking-[0.16em] text-slate-700">Notas y condiciones</h3>
             <ul className="mt-3 space-y-1.5 text-sm text-slate-700">
               {notes.length > 0 ? (
