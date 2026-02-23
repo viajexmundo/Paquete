@@ -101,6 +101,7 @@ export default async function AdminUsersPage() {
               <span className="mb-1 block text-sm font-medium">Rol</span>
               <select name="role" defaultValue="EDITOR" className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
                 <option value="EDITOR">EDITOR</option>
+                <option value="COTIZADOR">COTIZADOR</option>
                 <option value="ADMIN">ADMIN</option>
               </select>
             </label>
@@ -153,6 +154,7 @@ export default async function AdminUsersPage() {
                           className="w-full rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm"
                         >
                           <option value="EDITOR">EDITOR</option>
+                          <option value="COTIZADOR">COTIZADOR</option>
                           <option value="ADMIN">ADMIN</option>
                         </select>
                       </div>

@@ -339,13 +339,13 @@ export async function importPackagesCsvAction(formData: FormData) {
 const createUserSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  role: z.enum(["ADMIN", "EDITOR"]),
+  role: z.enum(["ADMIN", "EDITOR", "COTIZADOR"]),
   canManagePackages: z.string().optional(),
 });
 
 const updateUserAccessSchema = z.object({
   userId: z.string().min(8),
-  role: z.enum(["ADMIN", "EDITOR"]),
+  role: z.enum(["ADMIN", "EDITOR", "COTIZADOR"]),
   canManagePackages: z.string().optional(),
 });
 
@@ -407,13 +407,15 @@ export async function createUserAction(formData: FormData) {
     update: {
       passwordHash,
       role,
-      canManagePackages: role === UserRole.ADMIN ? true : data.canManagePackages === "on",
+      canManagePackages:
+        role === UserRole.ADMIN ? true : role === UserRole.EDITOR ? data.canManagePackages === "on" : false,
     },
     create: {
       email,
       passwordHash,
       role,
-      canManagePackages: role === UserRole.ADMIN ? true : data.canManagePackages === "on",
+      canManagePackages:
+        role === UserRole.ADMIN ? true : role === UserRole.EDITOR ? data.canManagePackages === "on" : false,
     },
   });
 
@@ -435,7 +437,8 @@ export async function updateUserAccessAction(formData: FormData) {
     where: { id: data.userId },
     data: {
       role,
-      canManagePackages: role === UserRole.ADMIN ? true : data.canManagePackages === "on",
+      canManagePackages:
+        role === UserRole.ADMIN ? true : role === UserRole.EDITOR ? data.canManagePackages === "on" : false,
     },
   });
 

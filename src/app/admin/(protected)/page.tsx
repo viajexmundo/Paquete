@@ -57,6 +57,10 @@ export default async function AdminDashboardPage() {
     redirect("/admin/login");
   }
 
+  if (user.role === UserRole.COTIZADOR) {
+    redirect("/admin/cotizador");
+  }
+
   if (user.role !== UserRole.ADMIN && !user.canManagePackages) {
     redirect("/admin/usuarios");
   }

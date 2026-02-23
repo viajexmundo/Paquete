@@ -39,6 +39,7 @@ npm run dev
 - `/paquetes/[slug]` detalle del paquete + CTA WhatsApp
 - `/admin/login` login admin
 - `/admin` dashboard admin (protegido)
+- `/admin/cotizador` generador de cotizaciones y PDF
 - `/admin/paquetes/nuevo` crear paquete (wizard)
 - `/admin/paquetes/[id]/editar` editar paquete
 - `/api/upload` carga de imagenes (cover y galeria)
