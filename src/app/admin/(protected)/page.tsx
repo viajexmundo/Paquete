@@ -3,7 +3,6 @@ import { PackageStatus, UserRole } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { AdminTabs } from "@/components/admin-tabs";
 import { LogoutButton } from "@/components/logout-button";
-import { deletePackageAction, togglePackageStatusAction } from "./actions";
 import { auth } from "@/lib/auth";
 import { getAllPackages } from "@/lib/db/package-repository";
 import { prisma } from "@/lib/db/prisma";
@@ -13,18 +12,6 @@ const statusLabel: Record<PackageStatus, string> = {
   DRAFT: "Borrador",
   PUBLISHED: "Publicado",
   ARCHIVED: "Archivado",
-};
-
-const nextStatusMap: Record<PackageStatus, PackageStatus> = {
-  DRAFT: "PUBLISHED",
-  PUBLISHED: "ARCHIVED",
-  ARCHIVED: "DRAFT",
-};
-
-const nextStatusLabel: Record<PackageStatus, string> = {
-  DRAFT: "Publicar",
-  PUBLISHED: "Archivar",
-  ARCHIVED: "Mandar a borrador",
 };
 
 export default async function AdminDashboardPage() {
@@ -73,11 +60,34 @@ export default async function AdminDashboardPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-10 text-slate-900">
+      {/* ── AVISO DE MIGRACIÓN ── */}
+      <section className="mx-auto max-w-6xl mb-5 rounded-2xl border-2 border-amber-400 bg-amber-50 p-5">
+        <div className="flex items-start gap-4">
+          <span className="text-3xl select-none">⚠️</span>
+          <div>
+            <p className="font-bold text-amber-900 text-base">Este panel ya no se usa para administrar paquetes</p>
+            <p className="text-amber-800 text-sm mt-1">
+              Los paquetes ahora se gestionan desde la plataforma central <strong>VentasVXM</strong>.
+              Para agregar, editar o publicar paquetes, ingresa a la plataforma nueva.
+            </p>
+            <a
+              href="https://ventasvxm.vercel.app/paquetes"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block rounded-lg bg-amber-700 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-800 transition"
+            >
+              Ir a la plataforma VentasVXM →
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-7 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-700">Panel admin</p>
             <h1 className="text-2xl font-semibold">Paquetes de viaje</h1>
+            <p className="text-xs text-slate-400 mt-0.5">Solo lectura — gestión migrada a VentasVXM</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <a
@@ -98,12 +108,12 @@ export default async function AdminDashboardPage() {
             >
               JSON
             </Link>
-            <Link
-              href="/admin/paquetes/nuevo"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700"
+            <span
+              title="Gestión migrada a VentasVXM"
+              className="rounded-lg bg-slate-300 px-4 py-2 text-sm font-medium text-slate-500 cursor-not-allowed select-none"
             >
-              Nuevo paquete
-            </Link>
+              Nuevo paquete (deshabilitado)
+            </span>
             <LogoutButton />
           </div>
         </div>
@@ -173,43 +183,7 @@ export default async function AdminDashboardPage() {
                   </td>
                   <td className="px-4 py-3">{statusLabel[travelPackage.status]}</td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/admin/paquetes/${travelPackage.id}/editar`}
-                        className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-100"
-                      >
-                        Editar
-                      </Link>
-                      <form
-                        action={async () => {
-                          "use server";
-                          await togglePackageStatusAction(
-                            travelPackage.id,
-                            nextStatusMap[travelPackage.status],
-                          );
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-slate-300 px-3 py-1.5 hover:bg-slate-100"
-                        >
-                          {nextStatusLabel[travelPackage.status]}
-                        </button>
-                      </form>
-                      <form
-                        action={async () => {
-                          "use server";
-                          await deletePackageAction(travelPackage.id);
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          className="rounded-lg border border-rose-300 px-3 py-1.5 text-rose-700 hover:bg-rose-50"
-                        >
-                          Borrar
-                        </button>
-                      </form>
-                    </div>
+                    <span className="text-xs text-slate-400 italic">Gestión en VentasVXM</span>
                   </td>
                 </tr>
               ))}
