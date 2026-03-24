@@ -1,85 +1,66 @@
-import { PackageStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { supabase } from "@/lib/supabase";
 import type { TravelPackage } from "@/lib/packages";
+import { buildSlug } from "@/lib/packages";
 
-function toStringArray(value: Prisma.JsonValue) {
-  return Array.isArray(value) ? (value as string[]) : [];
-}
+// ==========================================
+// Supabase mapper (for public queries)
+// ==========================================
 
-function mapPackage(record: {
-  id: string;
-  packageCode: string;
-  slug: string;
-  name: string;
-  destination: string;
-  durationDays: number;
-  basePrice: number;
-  offerPrice: number | null;
-  isOffer: boolean;
-  offerLabel: string | null;
-  currency: string;
-  summary: string;
-  description: string;
-  coverImageUrl: string;
-  gallery: Prisma.JsonValue;
-  includes: Prisma.JsonValue;
-  excludes: Prisma.JsonValue;
-  itinerary: Prisma.JsonValue;
-}): TravelPackage {
+function mapSupabasePackage(p: Record<string, unknown>): TravelPackage {
   return {
-    id: record.id,
-    packageCode: record.packageCode,
-    slug: record.slug,
-    name: record.name,
-    destination: record.destination,
-    durationDays: record.durationDays,
-    basePrice: record.basePrice,
-    offerPrice: record.offerPrice,
-    isOffer: record.isOffer,
-    offerLabel: record.offerLabel,
+    id: String(p.id ?? ""),
+    packageCode: String(p.code ?? ""),
+    slug: buildSlug(String(p.title ?? "")),
+    name: String(p.title ?? ""),
+    destination: String(p.destination ?? ""),
+    durationDays: Number(p.duration_days) || 0,
+    basePrice: Number(p.price) || 0,
+    offerPrice: p.offer_price ? Number(p.offer_price) : null,
+    isOffer: Boolean(p.has_offer),
+    offerLabel: p.offer_label ? String(p.offer_label) : null,
     currency: "GTQ",
-    summary: record.summary,
-    description: record.description,
-    coverImage: record.coverImageUrl,
-    gallery: toStringArray(record.gallery),
-    includes: toStringArray(record.includes),
-    excludes: toStringArray(record.excludes),
-    itinerary: Array.isArray(record.itinerary)
-      ? (record.itinerary as Array<{ day: number; title: string; description: string }>)
+    summary: String(p.summary ?? ""),
+    description: String(p.description ?? ""),
+    coverImage: String(p.cover_image ?? ""),
+    gallery: Array.isArray(p.gallery) ? (p.gallery as string[]) : [],
+    includes: Array.isArray(p.includes) ? (p.includes as string[]) : [],
+    excludes: Array.isArray(p.excludes) ? (p.excludes as string[]) : [],
+    itinerary: Array.isArray(p.itinerary)
+      ? (p.itinerary as Array<{ day: number; title: string; description: string }>)
       : [],
   };
 }
 
-const packageSelect = {
-  id: true,
-  packageCode: true,
-  slug: true,
-  name: true,
-  destination: true,
-  durationDays: true,
-  basePrice: true,
-  offerPrice: true,
-  isOffer: true,
-  offerLabel: true,
-  currency: true,
-  summary: true,
-  description: true,
-  coverImageUrl: true,
-  gallery: true,
-  includes: true,
-  excludes: true,
-  itinerary: true,
-} satisfies Prisma.PackageSelect;
+// ==========================================
+// Public queries → Supabase
+// ==========================================
 
-export async function getPublishedPackages() {
-  const packages = await prisma.package.findMany({
-    where: { status: PackageStatus.PUBLISHED },
-    orderBy: [{ isOffer: "desc" }, { createdAt: "desc" }],
-    select: packageSelect,
-  });
+export async function getPublishedPackages(): Promise<TravelPackage[]> {
+  const { data, error } = await supabase
+    .from("packages")
+    .select("*")
+    .eq("is_public_cooitza", true)
+    .order("has_offer", { ascending: false })
+    .order("created_at", { ascending: false });
 
-  return packages.map(mapPackage);
+  if (error) {
+    console.error("Supabase getPublishedPackages error:", error.message);
+    return [];
+  }
+
+  return (data ?? []).map(mapSupabasePackage);
 }
+
+export async function getPublishedPackageBySlug(slug: string): Promise<TravelPackage | null> {
+  // Supabase doesn't have a slug column — we fetch all published and filter
+  const packages = await getPublishedPackages();
+  return packages.find((p) => p.slug === slug) ?? null;
+}
+
+// ==========================================
+// Admin queries → still Prisma (local SQLite)
+// ==========================================
 
 export async function getAllPackages() {
   const packages = await prisma.package.findMany({
@@ -99,15 +80,6 @@ export async function getAllPackages() {
   });
 
   return packages;
-}
-
-export async function getPublishedPackageBySlug(slug: string) {
-  const record = await prisma.package.findFirst({
-    where: { slug, status: PackageStatus.PUBLISHED },
-    select: packageSelect,
-  });
-
-  return record ? mapPackage(record) : null;
 }
 
 export async function getAnyPackageById(id: string) {
